@@ -12,3 +12,5 @@ if response.status_code == 200:
 else:
     print(f"Error code {response.status_code} : {response.reason}")
     print(response.text)  # Print the response content to see error details
+
+
