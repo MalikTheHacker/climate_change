@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from joblib import load
 import pandas as pd
+from datetime import datetime
 
 start_date = load("start_date.gz")
 encoder = load("encoder.gz")
@@ -23,13 +24,13 @@ async def test():
 async def get_temp(feature: FeatureType):
     try:
         country = feature.Country.capitalize()
-        date = pd.to_datetime(feature.Date)
+        date = datetime.strptime(feature.Date, "%Y-%m-%d")
 
         encoded_country = encoder.transform([[country]])
         encoded_country_df = pd.DataFrame(encoded_country, columns=encoder.get_feature_names_out())
 
         if date >= start_date:
-            days_diff = int(abs(start_date - date).days)
+            days_diff = int(abs(start_date.to_pydatetime() - date).days)
         else:
             return {"Error": f"Date should be more than or equal to {start_date}"}
 
