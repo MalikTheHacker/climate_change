@@ -2,7 +2,6 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from joblib import load
 import pandas as pd
-import json
 
 start_date = load("start_date.gz")
 encoder = load("encoder.gz")
@@ -20,7 +19,7 @@ async def test():
     return "Hola to the web"
 
 @app.post("/")
-async def get_temp(feature:FeatureType):
+async def get_temp(feature: FeatureType):
     
     country = feature.Country.capitalize()
     date = pd.to_datetime(feature.Date)
@@ -33,10 +32,11 @@ async def get_temp(feature:FeatureType):
     else:
         return {"Error": f"Date should be more than or equal to {start_date}"}
 
-    new_country_input =  pd.concat([encoded_country_df, pd.DataFrame({"days since": [days_diff]})], axis=1)
+    new_country_input = pd.concat([encoded_country_df, pd.DataFrame({"days since": [days_diff]})], axis=1)
     
     predicted_temperature = model.predict(new_country_input)
-    print("Hello")
-    return predicted_temperature
-
-
+    
+    # Convert the NumPy array to a regular Python value that can be JSON serialized
+    predicted_value = float(predicted_temperature[0]) if hasattr(predicted_temperature, "__len__") else float(predicted_temperature)
+    
+    return {"predicted_temperature": predicted_value}
